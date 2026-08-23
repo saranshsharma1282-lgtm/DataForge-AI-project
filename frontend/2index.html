@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>DataForge AI</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #f4f7fb;
+        }
+
+        .container {
+            width: 500px;
+            padding: 40px;
+            background: white;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #2563eb;
+            margin-bottom: 10px;
+        }
+
+        p {
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            background: #2563eb;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        #result {
+            margin-top: 25px;
+            text-align: left;
+            padding: 15px;
+            background: #f1f5f9;
+            border-radius: 8px;
+            display: none;
+        }
+
+        a {
+            display: inline-block;
+            margin-top: 15px;
+            color: #2563eb;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>DataForge AI</h1>
+
+    <p>Upload your Excel file and clean your data instantly.</p>
+
+    <input type="file" id="fileInput" accept=".xlsx,.xls">
+
+    <button onclick="uploadFile()">Upload & Clean Data</button>
+
+    <div id="result"></div>
+
+</div>
+
+<script>
+
+async function uploadFile() {
+
+    const fileInput = document.getElementById("fileInput");
+    const result = document.getElementById("result");
+
+    if (!fileInput.files.length) {
+        alert("Please select an Excel file first!");
+        return;
+    }
+
+    const formData = new FormData();
+
+    formData.append("file", fileInput.files[0]);
+
+    result.style.display = "block";
+    result.innerHTML = "Processing your Excel file...";
+
+    try {
+
+        const response = await fetch(
+            "http://127.0.0.1:8000/upload",
+            {
+                method: "POST",
+                body: formData
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            result.innerHTML = "Error: " + data.error;
+            return;
+        }
+
+        result.innerHTML = `
+            <h3>Success! 🎉</h3>
+            <p><strong>Original file:</strong> ${data.original_file}</p>
+            <p><strong>Total rows:</strong> ${data.total_rows}</p>
+            <p><strong>Duplicates removed:</strong> ${data.duplicates_removed}</p>
+            <p><strong>Empty rows removed:</strong> ${data.empty_rows_removed}</p>
+
+            <a href="http://127.0.0.1:8000${data.download_url}" download>
+                Download Cleaned Excel File
+            </a>
+        `;
+
+    } catch (error) {
+
+        result.innerHTML =
+            "Error connecting to backend. Make sure the FastAPI server is running.";
+
+    }
+
+}
+
+</script>
+
+</body>
+</html>

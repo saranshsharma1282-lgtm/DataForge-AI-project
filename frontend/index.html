@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DataForge AI</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0f172a, #1e293b);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 650px;
+            background: white;
+            color: #1e293b;
+            padding: 40px;
+            border-radius: 18px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+
+        h1 {
+            margin-top: 0;
+            color: #2563eb;
+        }
+
+        p {
+            color: #64748b;
+        }
+
+        .upload-box {
+            border: 2px dashed #2563eb;
+            padding: 30px;
+            margin: 25px 0;
+            border-radius: 12px;
+        }
+
+        input[type="file"] {
+            margin: 15px;
+        }
+
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 14px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        #status {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+
+        #downloadLink {
+            display: none;
+            margin-top: 20px;
+            padding: 12px 20px;
+            background: #16a34a;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+    <h1>⚡ DataForge AI</h1>
+    <p>Upload your Excel file and automatically clean your data.</p>
+
+    <div class="upload-box">
+        <input type="file" id="fileInput" accept=".xlsx,.xls">
+        <br>
+        <button onclick="uploadFile()">Clean My Data</button>
+    </div>
+
+    <div id="status"></div>
+
+    <a id="downloadLink" href="#" download>
+        ⬇ Download Cleaned Excel
+    </a>
+</div>
+
+<script>
+async function uploadFile() {
+    const fileInput = document.getElementById("fileInput");
+    const status = document.getElementById("status");
+    const downloadLink = document.getElementById("downloadLink");
+
+    if (!fileInput.files.length) {
+        status.innerText = "Please select an Excel file first.";
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", fileInput.files[0]);
+
+    status.innerText = "Uploading and cleaning your data...";
+    downloadLink.style.display = "none";
+
+    try {
+        const response = await fetch("http://127.0.0.1:8000/upload", {
+            method: "POST",
+            body: formData
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.detail || "Upload failed");
+        }
+
+        status.innerHTML =
+            "✅ Success!<br>" +
+            "Total Rows: " + result.total_rows + "<br>" +
+            "Duplicates Removed: " + result.duplicates_removed + "<br>" +
+            "Empty Rows Removed: " + result.empty_rows_removed;
+
+        downloadLink.href =
+            "http://127.0.0.1:8000" + result.download_url;
+
+        downloadLink.style.display = "inline-block";
+
+    } catch (error) {
+        status.innerText = "❌ Error: " + error.message;
+    }
+}
+</script>
+
+</body>
+</html>
