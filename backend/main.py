@@ -1,8 +1,16 @@
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import fileResponse
-from fastapi.middleware.cors import CORSMiddleware
+import os
+import shutil
+from pathlib import Path
+
 from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+from fastapi.middleware.cors import CORSMiddleware
+
 import pandas as pd
 import os
 import shutil
@@ -25,15 +33,18 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 FRONTEND_DIR = BASE_DIR / "frontend"
 UPLOAD_FOLDER = BASE_DIR / "data"
 OUTPUT_FOLDER = BASE_DIR / "output"
+OUTPUT_FOLDER = Path("output")
+OUTPUT_FOLDER.mkdir(exist_ok=True)
 
 UPLOAD_FOLDER.mkdir(exist_ok=True)
 OUTPUT_FOLDER.mkdir(exist_ok=True)
 
 
-@app.mount("/static", StaticFiles(directory=OUTPUT_FOLDER), name="static")
+
+app.mount("/static", StaticFiles(directory=OUTPUT_FOLDER),name="static")
 @app.get("/")
 def read_root():
-    return fileResponse(FRONTEND_DIR /"index.html")
+    return FileResponse(FRONTEND_DIR /"index.html")
 
 
 @app.post("/upload")
@@ -161,4 +172,4 @@ def download_excel(filename: str):
     )
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    uvicorn.run(app, host="127.0.0.1", port=8001)
