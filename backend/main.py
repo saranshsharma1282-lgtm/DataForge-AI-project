@@ -1,3 +1,5 @@
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import fileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.responses import FileResponse
@@ -20,6 +22,7 @@ CORSMiddleware,
 
 # Project folders
 BASE_DIR = Path(__file__).resolve().parent.parent
+FRONTEND_DIR = BASE_DIR / "frontend"
 UPLOAD_FOLDER = BASE_DIR / "data"
 OUTPUT_FOLDER = BASE_DIR / "output"
 
@@ -27,11 +30,10 @@ UPLOAD_FOLDER.mkdir(exist_ok=True)
 OUTPUT_FOLDER.mkdir(exist_ok=True)
 
 
+@app.mount("/static", StaticFiles(directory=OUTPUT_FOLDER), name="static")
 @app.get("/")
-def home():
-    return {
-        "message": "DataForge AI backend is running!"
-    }
+def read_root():
+    return fileResponse(FRONTEND_DIR /"index.html")
 
 
 @app.post("/upload")
